@@ -1,0 +1,80 @@
+# -*- coding: utf-8 -*-
+import requests
+import json
+from bs4 import BeautifulSoup
+
+
+def make_url(a):
+    url = 'https://movie.douban.com/j/search_subjects?type=movie&tag=%E7%83%AD%E9%97%A8&sort=recommend&page_limit=20&page_start=' + str(a)
+    return url
+
+def get_html(url):
+    try:
+        d = {
+            'User Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0"}
+        r = requests.get(url=url, headers=d)
+        if r.status_code == 200:
+            return json.loads(r.text)
+    except:
+        print( "爬取失败" )
+        return None
+
+def get_son_html(url):
+    try:
+        d = {
+            'User Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0"}
+        r = requests.get(url=url, headers=d)
+        if r.status_code == 200:
+            return r.text
+    except:
+        print( "爬取失败" )
+        return None
+
+
+def params_son_html(son_html):
+    soup = BeautifulSoup(son_html)
+    # 影视名称
+    #name = soup.find( 'span', attrs={'property': "v:itemreviewed"} ).text
+    # tag
+    tags = soup.find_all( 'span', attrs={'property': "v:genre"} )
+    # 评分人数
+    people = soup.find('span', attrs={'property': "v:votes"})
+
+    # 五星评分
+    star = soup.find_all('span', attrs={'class': "rating_per"})
+    # 写入文件
+    with open("电影.txt", 'a', encoding='utf-8') as f:
+        f.write(people.text + ',')
+        for num in star:
+            f.write(num.text + ",")
+        for tag in tags:
+            f.write(str(tag.text) + ",")
+        f.write("\n")
+    f.close()
+
+
+
+def params_html(json_dict):
+    for i in json_dict['subjects']:
+        with open( "电影.txt", 'a', encoding='utf-8' ) as f:
+            f.write(i['title']+';'+i['rate']+';')
+        f.close()
+        href = i['url']
+        son_html = get_son_html(href)
+        params_son_html(son_html)
+
+
+
+
+def main():
+    for a in range(0,400,20):
+        url = make_url(a)
+        html = get_html(url)
+        if len(html['subjects']) <= 20:
+            params_html(html)
+        else:
+            params_html( html )
+            print("爬取完成")
+            return None
+
+main()
