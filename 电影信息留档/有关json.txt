@@ -1,0 +1,99 @@
+# -*- coding: utf-8 -*-
+import os
+import time
+import string
+import requests
+import json
+import urllib.parse
+from bs4 import BeautifulSoup
+from selenium import webdriver
+
+a = 0
+def make_url():
+    url = "https://movie.douban.com/j/search_subjects?type=movie&tag=%E7%83%AD%E9%97%A8&sort=recommend&page_limit=20&page_start="+str(a)
+    #a += 20
+    print(url)
+    return url
+
+def get_html(url):
+    try:
+        d = {
+            'Cookie':'bid=JoOO5Fbfy_U; __yadk_uid=HKvC8XvM5dNKhhV1SL6zGyRVjrAjrfU6; ll="118222"; douban-profile-remind=1; douban-fav-remind=1; ct=y; _vwo_uuid_v2=DBBFD1C4D4352E321CF39AA05ECDBC25C|ec2df2e7c16cc03c0576e19027669a33; _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1556023088%2C%22https%3A%2F%2Fwww.douban.com%2F%22%5D; ap_v=0,6.0; ps=y; dbcl2="193741190:MGOdDJNKEdo"; ck=cz6U; _pk_id.100001.4cf6=0f01e131a17d1b6d.1552918691.7.1556024644.1556019512.; _pk_ses.100001.4cf6=*; __utma=30149280.819158214.1555853957.1556019512.1556023088.5; __utmb=30149280.0.10.1556023088; __utmc=30149280; __utmz=30149280.1555943362.2.2.utmcsr=blog.csdn.net|utmccn=(referral)|utmcmd=referral|utmcct=/datacastle/article/details/78812575; __utma=223695111.1261872010.1552918691.1556019512.1556023088.7; __utmb=223695111.0.10.1556023088; __utmc=223695111; __utmz=223695111.1556016662.5.4.utmcsr=douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; push_noty_num=0; push_doumail_num=0',
+            'User Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0"}
+        r = requests.get(url, params=d)
+        url = 'https://movie.douban.com/j/search_subjects?type=movie&tag=%E7%83%AD%E9%97%A8&sort=recommend&page_limit=20&page_start=0'
+        request = requests.get(url=url, headers=d)
+        # json.loads 是把一个符合 json 格式的字符串转化成 python 对象（dict，list，string，int，double）
+        # json.dumps 是把一个 python 对象转化成 json 格式的字符串（默认 url 编码）
+        # json.load 直接从文件中读取 .json
+        # with open('xxx.json', 'r') as fp:
+        #     read = json.load(fp)
+        # json.dump 直接存储到文件中
+        data_dict = json.loads(request.text)
+
+        with open('xxx.json', 'w') as fp:
+            json.dump(data_dict, fp)
+
+        print(data_dict['subjects'][0])
+
+        data_json = json.dumps(data_dict, ensure_ascii=False)
+
+        print(data_json)
+
+        # if r.status_code == 200:
+        #     print(r.text)
+        #     return r.text
+    except:
+        print( "爬取失败" )
+        return None
+
+
+def params_son_html(son_html):
+    print("分析个体电影")
+    soup = BeautifulSoup(son_html)
+    #影视名称
+    name = soup.find('span',attrs={'property':"v:itemreviewed"}).text
+    #tag
+    tags = soup.find_all('span',attrs={'property':"v:genre"})
+    data = soup.find('div',attrs={'class':"rating_wrap clearbox",'rel':"v:rating"})
+    #得分
+    grade = data.find('strong',attrs={'class':"ll rating_num",'property':"v:average"}).text
+    #评分人数
+    people = data.find('span',attrs={'property':"v:votes"})
+    #五星评分
+    star = data.find_all('span',attrs={'class':"rating_per"})
+    # 写入文件
+    with open("电影.txt",'a',encoding='utf-8') as f:
+        f.write(name + ';' + grade + ';' + people + ',')
+        for num in star:
+            f.write(num.text+',')
+        for tag in tags:
+            f.write(tag+',')
+        f.write("\n")
+    f.close()
+
+
+def params_html(html):
+    soup = BeautifulSoup(html, "html.parser")
+    # son_url = soup.select('.list')
+    # print(son_url)
+    # print(len(son_url))
+    #print(soup)
+
+    son = soup.find_all('a',{'class':'item'})
+    print(son)
+    #爬取子链接
+    for i in son:
+        print(type(i))
+        href = i.attrs['href']
+        print(type(href))
+        son_html = get_html(href)
+        print("加载页面")
+        params_son_html(son_html)
+
+
+
+if __name__ == '__main__':
+    url = 'https://movie.douban.com/explore#!type=movie&tag=%E7%83%AD%E9%97%A8&sort=recommend&page_limit=20&page_start=0'
+    html = get_html(url)
+    # params_html(html)

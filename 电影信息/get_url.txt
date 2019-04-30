@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 
 
-#怕段标签
+#爬段标签
 # def judge_url(url):
 #     print("判断子链接是否存在")
 #     if url in url_list:
