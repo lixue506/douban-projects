@@ -1,0 +1,103 @@
+# -*- coding: utf-8 -*-
+import json
+import string
+import requests
+import urllib.parse
+import urllib.request
+from bs4 import BeautifulSoup
+
+
+
+#爬段标签
+# def judge_url(url):
+#     print("判断子链接是否存在")
+#     if url in url_list:
+#         return 0
+#     else:
+#         url_list.append(url)
+#         return 1
+
+#控制翻页，标签
+
+def make_url(a,lis):
+    url1 = 'https://movie.douban.com/j/search_subjects?type=movie&tag='
+    url2 = '&sort=recommend&page_limit=20&page_start=' + str(a)
+    add_url = url1 + lis + url2
+    url = urllib.parse.quote(add_url, safe=string.printable)
+    return url
+
+#返回主界面json数据
+def get_html(url):
+    try:
+        d = {
+            'Cookie': 'bid=JoOO5Fbfy_U; __yadk_uid=HKvC8XvM5dNKhhV1SL6zGyRVjrAjrfU6; ll="118222"; douban-profile-remind=1; douban-fav-remind=1; ct=y; _vwo_uuid_v2=DBBFD1C4D4352E321CF39AA05ECDBC25C|ec2df2e7c16cc03c0576e19027669a33; _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1556023088%2C%22https%3A%2F%2Fwww.douban.com%2F%22%5D; ap_v=0,6.0; ps=y; dbcl2="193741190:MGOdDJNKEdo"; ck=cz6U; _pk_id.100001.4cf6=0f01e131a17d1b6d.1552918691.7.1556024644.1556019512.; _pk_ses.100001.4cf6=*; __utma=30149280.819158214.1555853957.1556019512.1556023088.5; __utmb=30149280.0.10.1556023088; __utmc=30149280; __utmz=30149280.1555943362.2.2.utmcsr=blog.csdn.net|utmccn=(referral)|utmcmd=referral|utmcct=/datacastle/article/details/78812575; __utma=223695111.1261872010.1552918691.1556019512.1556023088.7; __utmb=223695111.0.10.1556023088; __utmc=223695111; __utmz=223695111.1556016662.5.4.utmcsr=douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; push_noty_num=0; push_doumail_num=0',
+            'User Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0"}
+        r = requests.get(url=url, headers=d)
+        if r.status_code == 200:
+            return json.loads(r.text)
+    except:
+        print( "爬取失败" )
+        return None
+
+#分析返回子页面
+# def get_son_html(url):
+#     try:
+#         d = {
+#             'User Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0"}
+#         r = requests.get(url=url, headers=d)
+#         if r.status_code == 200:
+#             return r.text
+#     except:
+#         print( "爬取失败" )
+#         return None
+
+#定位爬取
+# def params_son_html(son_html):
+#     soup = BeautifulSoup(son_html, "html.parser")
+#     # tag
+#     tags = soup.find_all( 'span', attrs={'property': "v:genre"} )
+#     # 评分人数
+#     people = soup.find('span', attrs={'property': "v:votes"})
+#     # 五星评分
+#     star = soup.find_all('span', attrs={'class': "rating_per"})
+#     # 写入文件
+#     with open("电影.txt", 'a', encoding='utf-8') as f:
+#         f.write(people.text + ',')
+#         for num in star:#评分1-5
+#             f.write(num.text + ",")
+#         for tag in tags:#类型
+#             f.write(str(tag.text) + ",")
+#         f.write("\n")
+#     f.close()
+#     print("以写入")
+
+#分析电影显示页，并获取电影名称，评分
+def params_html(json_dict):
+    for i in json_dict['subjects']:
+        href = i['url']
+        print(href)
+        #if judge_url(href) == 1:#判断电影是否已爬取，去重
+        with open("save_url.txt", 'a', encoding='utf-8' ) as f:
+            f.write(href + '\n')
+        f.close()
+
+#根据电影标签爬取所有电影
+def main():
+    lis_name = ["热门", "最新","经典","可播放","豆瓣高分","冷门佳片","华语","欧美","韩国",\
+                "日本","动作","喜剧","爱情","科幻","悬疑","恐怖","成长"]
+    for lis in lis_name:
+        print("正在爬取标签" + lis)
+        a = 0
+        while True:
+            url = make_url(a, lis)
+            html = get_html(url)
+            a += 20
+            if len(html['subjects']) == 20:
+                params_html( html )
+            else:
+                params_html( html )
+                print( "爬取完成单项" )
+                break
+    print("爬取完成")
+
+main()
