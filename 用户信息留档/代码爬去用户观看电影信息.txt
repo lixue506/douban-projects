@@ -1,0 +1,80 @@
+# -*- coding: utf-8 -*-
+
+# 爬取用户所看电影信息
+import re
+import time
+import requests
+from bs4 import BeautifulSoup
+
+def get_url(url):
+    try:
+        d = {
+            'Cookie':'bid=JoOO5Fbfy_U; douban-profile-remind=1; douban-fav-remind=1; ct=y; ps=y; _ga=GA1.2.819158214.1555853957; ll="108296"; __gads=ID=d72fe737b410a94a:T=1556710983:S=ALNI_MYcupPY64PVYQ0DDb0I_yTfAMO0Bw; dbcl2="193741190:MGOdDJNKEdo"; ck=cz6U; _vwo_uuid_v2=DBBFD1C4D4352E321CF39AA05ECDBC25C|ec2df2e7c16cc03c0576e19027669a33; ap_v=0,6.0; push_noty_num=0; push_doumail_num=0; frodotk="d971696f77c1a42b8c543c4e6744ec81"; __utma=30149280.819158214.1555853957.1557204823.1557218089.31; __utmb=30149280.0.10.1557218089; __utmc=30149280; __utmz=30149280.1556616814.19.6.utmcsr=douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/; __utmv=30149280.19374',
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 SE 2.X MetaSr 1.0'}
+        r = requests.get(url=url, headers=d)
+        if r.status_code == 200:
+            #print(r.text)
+            return r.text
+    except:
+        return None
+
+#构造网址，进入爬取
+def movie_parser(html):
+    soup = BeautifulSoup(html, "html.parser")
+    movie_list = soup.find_all('a', attrs={'class':"nbg"})
+    for i in movie_list:
+        url = i['href']
+        #爬取电影名称
+        son_html = get_url(url)
+        son_soup = BeautifulSoup(son_html, "html.parser")
+        name = son_soup.find('span',attrs={'property':"v:itemreviewed"}).text
+        #爬取电影评分
+        rating = re.find(r'class="rating\d-t"', i)
+        grade = re.find(r'\d', rating)
+        print(name + ":" + grade)
+        save_movie(name, grade)
+
+# 写入存储
+def save_movie(name, grade):
+    pass
+    # with open("people_movie.txt", 'a') as f:
+    #             f.write(name + "," + grade + ";")
+    # f.close()
+
+#进入电影主页
+def html_parser(name_html):
+    # soup = BeautifulSoup(html,"html.parser")
+    # src = soup.find_all('span', attrs={'class':"pl"}) #.find_all('a',attrs={'target':"_blank"})
+    # print(src)
+    # if src == None:
+    #     return None
+    # for url in src:
+    #     print(url)
+    #     if "看过" in url.text:
+    #         sum = int(re.compile(r'\d+', url.text))
+    #         global_url = url['href']
+    #         print(global_url)
+    #         name_html = get_url(global_url)
+            name_soup = BeautifulSoup(name_html, "html.parser")
+            name = name_soup.find_all('soan', attrs={'class':"verfy-name"}).text
+            with open("people_movie.txt", 'a') as f:
+                f.write(name + ":")
+            f.close()
+            for num in range(0, sum+1, 15):
+                finall_url = global_url + "?start=" + str(num)
+                son_html = get_url(finall_url)
+                movie_parser(son_html)
+            with open("people_movie.txt", 'a') as f:
+                f.write("\n")
+            f.close()
+            break
+
+if __name__=="__main__":
+    with open("follower.text", 'r') as file:
+        line = file.readline().strip('\n')
+        url = line + 'collect'
+        html = get_url(url)
+        html_parser(html)
+    file.close()
+
+
