@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Movie Recommendation</title>
+    <script>
+        function sub(){
+        window.location.href='show_movie.html';
+            if(form.user_id.value == '')
+            {   alert("请检查输入信息!");
+                return true;
+               }
+            else
+            {   window.location.href='show_movie.html';
+              return false;}
+        }
+    </script>
+    <STYLE type="text/css">
+        .form{
+            width:400px;
+            height:280px;
+            position:absolute;
+            left: 50%;
+            top: 37%;
+            margin-left:-200px;
+            margin-top:-140px;
+            border:1px;
+            align:center;
+        }
+
+        .input{
+            height:45px;
+            width:350px;
+            font-size:30px;
+            align:center;
+        }
+
+        .but{
+            height:30px;
+            width:100px;
+            align:center;
+        }
+    </STYLE>
+</head>
+<body style="background-color:aquamarine">
+    <form method="get" name="form">
+        <h2>账&nbsp;&nbsp;&nbsp;号：</h2>
+        <input name="user_id" placeholder="输入账号" type="36" class="input">
+        <br>
+        <br>
+        <input onclick="return sub();" type="submit" value="SUBMIT" class="but" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="reset" value="RESET" class="but">
+    </form>
+    <script src="https://cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>　
+</body>
+</html>

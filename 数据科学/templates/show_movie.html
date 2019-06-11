@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Movie Recommendation</title>
+</head>
+<body>
+    <h1>推荐电影</h1>
+    <ol>
+
+    </ol>
+	<script>
+        $.ajax({
+        url: "数据科学/web_demo",
+        type: "POST",
+        dataType: "json",
+
+        })
+	</script>
+
+
+    <script>
+        $(function() {
+            $("#btn").click(function(){
+                $.ajax({
+                url: "test_post/nn",
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                $("#NAME2").val(data.name);
+                $("#AGE2").val(data.age);
+                console.log(data)}
+
+                })
+            })
+        })
+    </script>
+
+</body>
+
+</html>
